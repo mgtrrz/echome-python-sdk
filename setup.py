@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="echome-python-sdk-mgtrrz",
+    name="echome-sdk",
     version="0.1.0",
     author="Marcus Gutierrez",
     author_email="markg90@gmail.com",
