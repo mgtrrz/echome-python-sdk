@@ -32,5 +32,9 @@ vscodeenv/
 __pycache__/
 *.py[cod]
 
+# Python Package specific
+*.egg-info
+build/
+
 # Misc files:
 sandbox.py

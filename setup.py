@@ -20,7 +20,6 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'A>=1',
-        'B>=2'
+        'requests>=2.24'
     ]
 )
