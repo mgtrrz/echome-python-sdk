@@ -20,7 +20,7 @@ Thumbs.db
 
 # VSCode #
 ##########
-.vscode/*
+.vscode/
 
 # Python #
 ##########
@@ -35,6 +35,7 @@ __pycache__/
 # Python Package specific
 *.egg-info
 build/
+dist/
 
 # Misc files:
 sandbox.py

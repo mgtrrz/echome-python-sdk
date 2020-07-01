@@ -4,6 +4,8 @@ This Python library is for use with interacting with the [ecHome](https://github
 
 This library allows for managing aspects of ecHome with classes. The SDK is responsible for starting and authenticating user sessions, making the calls to the API, returning raw JSON responses, and in the future, objects based on the services.
 
+If you're looking for a CLI interface for managing your ecHome server, visit [echome-cli](https://github.com/mgtrrz/echome-cli/) and install the CLI tool which uses this library. If you're interested in programmatically interfacing with ecHome, this is the library to do so.
+
 ## Authentication
 
 This library works by using config/credentials in the user's home directory in `.echome`. Fill in the contents of the files with the following information:
