@@ -8,6 +8,7 @@ from configparser import ConfigParser
 from os import getenv
 from pathlib import Path
 from .vm import Vm, Images, SshKey
+from .network import Network
 from .response import Response
 
 default_echome_dir = ".echome"
