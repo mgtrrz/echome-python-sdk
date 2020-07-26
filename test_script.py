@@ -1,4 +1,4 @@
-from echome import Session, Vm, Images, SshKey
+from echome import Session
 import logging
 import json
 
@@ -14,6 +14,14 @@ for vm in vms:
     name = vm["tags"]["Name"] if "Name" in vm["tags"] else ""
     print(f"{vm['instance_id']}\t{name}")
 
+
+network_client = session.client("Network")
+networks = network_client.describe_all()
+for network in networks:
+    print(json.dumps(network, indent=4))
+
+net = network_client.describe("vnet-517d0ed2")
+print(json.dumps(net, indent=4))
 
 #thing = vm.describe_all()
 # our_vm = vm.describe("vm-e7468d6e")
