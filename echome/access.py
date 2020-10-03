@@ -6,8 +6,8 @@ import string
 from .response import Response
 from .resource import base_resource
 
-class Network(base_resource):
-    namespace = "network"
+class Access(base_resource):
+    namespace = "access"
 
     def describe_all(self, json_response=True):
         r = self.request_url("/describe/all")
@@ -15,20 +15,26 @@ class Network(base_resource):
         self.raw_json_response = r.json()
         return r.json()
     
-    def describe(self, vnet_id: string, json_response=True):
-        r = self.request_url(f"/describe/{vnet_id}")
+    def describe_user(self, user_id: string, json_response=True):
+        r = self.request_url(f"/describe/{user_id}")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()
     
-    def create(self, vnet_id: string, json_response=True):
+    def describe_caller(self, json_response=True):
+        r = self.request_url(f"/describe/caller")
+        self.status_code = r.status_code
+        self.raw_json_response = r.json()
+        return r.json()
+    
+    def create(self, user_id: string, json_response=True):
         r = self.request_url(f"/create", "post")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()
     
-    def delete(self, vnet_id: string, json_response=True):
-        r = self.request_url(f"/delete/{vnet_id}", "post")
+    def terminate(self, user_id: string, json_response=True):
+        r = self.request_url(f"/terminate/{user_id}", "post")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()

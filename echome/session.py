@@ -16,11 +16,11 @@ default_echome_session_dir = ".echome/sess"
 default_config_file = "config"
 default_credential_file = "credentials"
 
-default_profile = "default"
+DEFAULT_PROFILE = "default"
 
-default_connection = "insecure"
-default_format = "table"
-api_version = "v1"
+DEFAULT_CONNECTION = "insecure"
+DEFAULT_FORMAT = "table"
+API_VERSION = "v1"
 
 # Grabs the config and credentials from the user's home dir
 # and establishes a connection with the server and authorization
@@ -40,26 +40,26 @@ class Session:
 
         config_from_file = {}
 
-        self.current_profile = getenv("ECHOME_PROFILE", default_profile)
+        self.current_profile = getenv("ECHOME_PROFILE", DEFAULT_PROFILE)
         
         self.server_url = getenv("ECHOME_SERVER", self.__get_local_config("server"))
         self.access_id  = getenv("ECHOME_ACCESS_ID", self.__get_local_credentials("access_id"))
         self.secret_key = getenv("ECHOME_SECRET_KEY", self.__get_local_credentials("secret_key"))
-        self.connection_type = getenv("ECHOME_PROTOCOL", config_from_file["protocol"] if self.__get_local_config("protocol") else default_connection)
+        self.connection_type = getenv("ECHOME_PROTOCOL", config_from_file["protocol"] if self.__get_local_config("protocol") else DEFAULT_CONNECTION)
         if self.connection_type == "insecure":
             self.protocol = "http://"
         elif self.connection_type == "secure":
             self.protocol = "https://"
         else:
-            raise ConfigFileError(f"Unknown connection type specified. Use either 'secure' or 'insecure'. A blank value defaults to {default_connection}")
+            raise ConfigFileError(f"Unknown connection type specified. Use either 'secure' or 'insecure'. A blank value defaults to {DEFAULT_CONNECTION}")
 
-        self.format      = getenv("ECHOME_FORMAT", config_from_file["format"] if "format" in config_from_file else default_format)
-        self.api_version = api_version
+        self.format      = getenv("ECHOME_FORMAT", config_from_file["format"] if "format" in config_from_file else DEFAULT_FORMAT)
+        self.API_VERSION = API_VERSION
 
         if not self.server_url:
             Response.unrecoverable_error("ecHome server URL is not set in environment variable or config file. Unable to continue!")
         
-        self.base_url = f"{self.protocol}{self.server_url}/{self.api_version}"
+        self.base_url = f"{self.protocol}{self.server_url}/{self.API_VERSION}"
         self.user_agent = f"ecHome_sdk/0.1.0 (Python {platform.python_version()}"
 
         # try retrieving session tokens we already have by reading the files and setting the variables
