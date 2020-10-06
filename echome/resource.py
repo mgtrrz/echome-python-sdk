@@ -61,18 +61,65 @@ class base_resource:
                 raise Exception("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
             x += 1
         
-        if response.status_code == 200 or response.status_code == 404:
+        # Try to unpack the JSON response to see if it's a valid response
+        try:
+            dec = response.json()
+        except json.decoder.JSONDecodeError as e:
+            logging.warning("Got non-json response from server.")
+            logging.debug(e)
+            logging.debug(response.raw.msg)
+
+        
+        if response.status_code == 200 or response.status_code == 400 or response.status_code == 404 or response.status_code == 500:
             return response
         else:
             logging.debug(f"Unexpected response from the server: {response.status_code}")
-            Response.unexpected_response(f"Unexpected response from the server: {response.json()}", exit=True)
+            Response.unexpected_response(f"Unexpected response from the server: {response.raw}", exit=True)
 
     def unpack_tags(self, tags: dict):
-        tag_dict = {}
+        return self.unpack_dict(tags, "Tag")
+    
+    # Given a dictionary of tags for a resource, will return a dictionary
+    # to make an HTTP request with.
+    # e.g. {"Name": "Resource-1", "Env":"Staging"}
+    # returns: {
+    #     "Tag.1.Key": "Name",
+    #     "Tag.1.Value": "Resource-1",
+    #     "Tag.2.Key": "Env", 
+    #     "Tag.2.Value": "Staging"
+    # }
+    def unpack_dict(self, generic_dict:dict, dict_name:str):
+        unpacked_dict = {}
         num = 1
-        tag_dict["Tags"] = "1"
-        for tag_key in tags:
-            tag_dict[f"Tag.{num}.Key"] = tag_key
-            tag_dict[f"Tag.{num}.Value"] = tags[tag_key]
-            num = num + 1
-        return tag_dict
+        unpacked_dict[dict_name] = "1"
+        for dict_key in generic_dict:
+            unpacked_dict[f"{dict_name}.{num}.Key"] = dict_key
+            unpacked_dict[f"{dict_name}.{num}.Value"] = generic_dict[dict_key]
+            num += 1
+        return unpacked_dict
+    
+    # Given a generic list, and a name to use for the list, will return a
+    # dictionary to make an HTTP request with.
+    # e.g. generic_list = ["192.168.10.10", "192.168.10.11", "192.168.10.12"]
+    #      list_name = "Node",
+    #      list_name_append = "Ip"
+    # returns: {
+    #     "Node.1.Ip": "192.168.10.10",
+    #     "Node.2.Ip": "192.168.10.11",
+    #     "Node.3.Ip": "192.168.10.12",
+    # }
+    # list_name_append is optional, if ommited, the key would simply look like:
+    # "Node.1"
+    def unpack_list(self, generic_list:list, list_name:str, list_name_append:str=None):
+        if list_name_append:
+            list_name_append = f".{list_name_append}"
+        else:
+            list_name_append = ""
+
+        unpacked_dict = {}
+        num = 1
+        unpacked_dict[list_name] = "1"
+        for val in generic_list:
+            unpacked_dict[f"{list_name}.{num}{list_name_append}"] = val
+            num += 1
+        return unpacked_dict

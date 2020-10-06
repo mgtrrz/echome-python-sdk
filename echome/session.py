@@ -10,6 +10,9 @@ from pathlib import Path
 from .vm import Vm, Images, SshKey
 from .network import Network
 from .response import Response
+from .network import Network
+from .kube import Kube
+from .access import Access
 
 default_echome_dir = ".echome"
 default_echome_session_dir = ".echome/sess"
@@ -60,7 +63,7 @@ class Session:
             Response.unrecoverable_error("ecHome server URL is not set in environment variable or config file. Unable to continue!")
         
         self.base_url = f"{self.protocol}{self.server_url}/{self.API_VERSION}"
-        self.user_agent = f"ecHome_sdk/0.1.0 (Python {platform.python_version()}"
+        self.user_agent = f"ecHome_sdk/0.2.0 (Python {platform.python_version()}"
 
         # try retrieving session tokens we already have by reading the files and setting the variables
         self.load_local_tokens()

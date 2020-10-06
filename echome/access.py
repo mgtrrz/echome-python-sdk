@@ -27,14 +27,16 @@ class Access(base_resource):
         self.raw_json_response = r.json()
         return r.json()
     
-    def create(self, user_id: string, json_response=True):
-        r = self.request_url(f"/create", "post")
+    def create(self, **kwargs):
+        if "Tags" in kwargs:
+            kwargs.update(self.unpack_tags(kwargs["Tags"]))
+        r = self.request_url(f"/create", "post", **kwargs)
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()
     
-    def terminate(self, user_id: string, json_response=True):
-        r = self.request_url(f"/terminate/{user_id}", "post")
+    def delete(self, user_id: string, json_response=True):
+        r = self.request_url(f"/delete/{user_id}", "post")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()
