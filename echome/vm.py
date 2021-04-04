@@ -3,81 +3,7 @@ import logging
 import base64
 import json
 from .response import Response
-
-class base_resource:
-    namespace = ""
-
-    def __init__(self, session, item_id=None):
-        self.init_session(session)
-    
-    def init_session(self, session, namespace=""):
-        if namespace:
-            self.namespace = namespace
-        self.base_url = f"{session.base_url}/{self.namespace}"
-        self.session = session
-    
-    def build_headers(self, type="access"):
-
-        logging.debug("Preparing Requests headers for normal access request")
-        headers = {
-            'user-agent': self.session.user_agent,
-            'Authorization': f"Bearer {self.session.token}"
-        }
-        
-        return headers
-    
-    def request_url(self, url_namespace, method="get", **kwargs):
-        # method here defines the request type to make. 'get' == requests.get, 'post', requests.post, etc.
-        try_refresh = False
-        try_login = False
-        x = 0
-        while True:
-            logging.debug(f"Calling: {self.base_url}{url_namespace}")
-            response = getattr(requests, method)(f"{self.base_url}{url_namespace}", headers=self.build_headers(), params=kwargs)
-            logging.debug(f"Got response code: {response.status_code}")
-
-            if response.status_code == 401:
-                # Try refreshing the token
-                logging.debug("Access token has expired, attempting refresh")
-                if self.session.refresh_token() and try_refresh is False:
-                    # The method returned True, it should be good to retry.
-                    try_refresh = True
-                    pass
-                else:
-                    # If we can't refresh, the refresh token is expired, try logging in to get new token/refresh.
-                    if self.session.login() and try_login is False:
-                        # try the original call again
-                        try_login = True
-                        pass
-                    else:
-                        logging.debug("Unable to login, giving up at this point.")
-                        Response.unauthorized_response("Unable to successfully authorize with ecHome server.", exit=True)
-
-            if response.status_code != 401:
-                break
-
-            if x > 5:
-                logging.warn("While True loop for making a request exceeded 5 loops. This should not have happened.")
-                raise Exception("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
-            x += 1
-        
-        if response.status_code == 200 or response.status_code == 404:
-            return response
-        else:
-            logging.debug(f"Unexpected response from the server: {response.status_code}")
-            Response.unexpected_response(f"Unexpected response from the server: {response.json()}", exit=True)
-
-
-    
-    def unpack_tags(self, tags: dict):
-        tag_dict = {}
-        num = 1
-        tag_dict["Tags"] = "1"
-        for tag_key in tags:
-            tag_dict[f"Tag.{num}.Key"] = tag_key
-            tag_dict[f"Tag.{num}.Value"] = tags[tag_key]
-            num = num + 1
-        return tag_dict
+from .resource import base_resource
 
 class Vm (base_resource):
     namespace = "vm"
@@ -127,10 +53,9 @@ class Vm (base_resource):
         self.tags = kwargs.get("tags", {})
         
     def create(self, **kwargs):
-        if "Tags" in kwargs:
+        if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
         
-        #r = requests.get(f"{self.base_url}/create", headers=self.build_headers(), params=kwargs)
         r = self.request_url("/create", "post", **kwargs)
         self.status_code = r.status_code
         return r.json()
@@ -139,7 +64,6 @@ class Vm (base_resource):
         if not id:
             id = self.vm_id
         
-        #r = requests.get(f"{self.base_url}/stop/{id}", headers=self.build_headers())
         r = self.request_url(f"/stop/{id}", "post")
         self.status_code = r.status_code
         return r.json()
@@ -147,7 +71,7 @@ class Vm (base_resource):
     def start(self, id=""):
         if not id:
             id = self.vm_id
-        #r = requests.get(f"{self.base_url}/start/{id}", headers=self.build_headers())
+
         r = self.request_url(f"/start/{id}", "post")
         self.status_code = r.status_code
         return r.json()
@@ -155,7 +79,7 @@ class Vm (base_resource):
     def terminate(self, id=""):
         if not id:
             id = self.vm_id
-        #r = requests.get(f"{self.base_url}/terminate/{id}", headers=self.build_headers())
+
         r = self.request_url(f"/terminate/{id}", "post")
         self.status_code = r.status_code
         return r.json()
@@ -191,19 +115,16 @@ class Images (base_resource):
         namespace = "vm/images/guest"
 
         def describe_all(self):
-            #r = requests.get(f"{self.base_url}/describe-all")
             r = self.request_url(f"/describe-all")
             self.status_code = r.status_code
             return r.json()
 
         def describe(self, id):
-            #r = requests.get(f"{self.base_url}/describe/{id}")
             r = self.request_url(f"/describe/{id}")
             self.status_code = r.status_code
             return r.json()
 
         def register(self, **kwargs):
-            #r = requests.post(f"{self.base_url}/register", params=kwargs)
             r = self.request_url(f"/register", method="post", **kwargs)
             self.status_code = r.status_code
             return r.json()
@@ -213,7 +134,6 @@ class Images (base_resource):
         namespace = "vm/images/user"
 
         def describe_all(self):
-            #r = requests.get(f"{self.base_url}/describe-all")
             r = self.request_url(f"/describe-all")
             self.status_code = r.status_code
             return r.json()
@@ -238,63 +158,34 @@ class SshKey (base_resource):
     namespace = "vm/ssh_key"
 
     def describe_all(self):
-        #r = requests.get(f"{self.base_url}/describe/all")
         r = self.request_url(f"/describe/all")
         self.status_code = r.status_code
         return r.json()
 
-        # if r.status_code == 200:
-        #     json_res = json.loads(r.text)
-        #     keys = []
-        #     for key in json_res:
-        #         obj = SshKeyObject(
-        #             self.session, 
-        #             self.namespace,
-        #             fingerprint=key["fingerprint"],
-        #             key_id=key["key_id"],
-        #             key_name=key["key_name"]
-        #         )
-        #         keys.append(obj)
-        # return keys
     
     def describe(self, KeyName):
-        #r = requests.get(f"{self.base_url}/describe/{KeyName}")
         r = self.request_url(f"/describe/{KeyName}")
-
         self.status_code = r.status_code
         return r.json()
 
-        # if r.status_code == 200:
-        #     json_res = json.loads(r.text)
-        #     for key in json_res:
-        #         obj = SshKeyObject(
-        #             self.session, 
-        #             self.namespace,
-        #             fingerprint=key["fingerprint"],
-        #             key_id=key["key_id"],
-        #             key_name=key["key_name"]
-        #         )
-        # return obj
     
     def create(self, KeyName):
-        #r = requests.get(f"{self.base_url}/create", params={"KeyName": KeyName})
         r = self.request_url(f"/create", method="post", KeyName=KeyName)
         self.status_code = r.status_code
         return r.json()
     
+
     def delete(self, KeyName):
-        #r = requests.get(f"{delf.base_url}/delete/{KeyName}")
         r = self.request_url(f"/delete/{KeyName}", method="post")
         self.status_code = r.status_code
         return r.json()
     
-    def import_key(self, KeyName, PublicKey):
 
+    def import_key(self, KeyName, PublicKey):
         args = {
             "KeyName": KeyName,
             "PublicKey": base64.urlsafe_b64encode(PublicKey)
         }
-        #r = requests.get(f"{self.base_url}/import", params=args)
         r = self.request_url(f"/import", method="post", params=args)
         self.status_code = r.status_code
         return r.json()
