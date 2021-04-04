@@ -41,12 +41,6 @@ class Kube(base_resource):
         self.raw_json_response = r.json()
         return r.json()
     
-    def terminate_cluster(self, cluster_id: string, json_response=True):
-        r = self.request_url(f"/cluster/terminate/{cluster_id}", "post")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
-    
     def get_kube_config(self, cluster_id: string, json_response=True):
         r = self.request_url(f"/cluster/config/{cluster_id}")
         self.status_code = r.status_code
