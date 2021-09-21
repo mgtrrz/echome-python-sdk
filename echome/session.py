@@ -1,6 +1,5 @@
 import logging
 import requests
-import base64
 import platform
 import os
 import sys
@@ -12,7 +11,10 @@ from .network import Network
 from .response import Response
 from .network import Network
 from .kube import Kube
-from .access import Access
+from .identity import Identity
+from . import __version__ as sdk_version
+
+logger = logging.getLogger(__name__)
 
 default_echome_dir = ".echome"
 default_echome_session_dir = ".echome/sess"
@@ -62,34 +64,48 @@ class Session:
         if not self.server_url:
             Response.unrecoverable_error("ecHome server URL is not set in environment variable or config file. Unable to continue!")
         
-        self.base_url = f"{self.protocol}{self.server_url}/{self.API_VERSION}"
-        self.user_agent = f"ecHome_sdk/0.2.0 (Python {platform.python_version()}"
+        # Setting the base URL: <protocol>://<server-domain-or-ip>/api/<version>
+        self.base_url = f"{self.protocol}{self.server_url}/api/{self.API_VERSION}"
+        self.user_agent = f"ecHome_sdk/{sdk_version} (Python {platform.python_version()})"
+
+        logger.debug(f"Using base url: {self.base_url}")
+        logger.debug(f"Using user agent: {self.user_agent}")
 
         # try retrieving session tokens we already have by reading the files and setting the variables
         self.load_local_tokens()
-        # If the token variable is still enpty, log in to set them.
+        # If the token variable is still empty, log in to set them.
+        logger.debug(self._token)
         if self._token is None:
             self.login()
 
     
-    # Login and retrieve a token
+    # Login and retrieve our tokens
     def login(self):
-        logging.debug("Logging in to ecHome server")
-        r = requests.post(f"{self.base_url}/auth/api/login", auth=(self.access_id, self.secret_key), headers=self.build_headers())
+        logger.debug("Logging in to ecHome server")
+        logger.debug(f"Using access key: {self.access_id}")
+        r = requests.post(
+            f"{self.base_url}/identity/token", 
+            data={"username": self.access_id, "password": self.secret_key},
+            headers=self.build_headers()
+        )
         response = r.json()
-        if r.status_code == 200 and "access_token" in response:
-            self.token = response["access_token"]
-            self.refresh = response["refresh_token"]
+        if r.status_code == 200 and "access" in response:
+            self.token = response["access"]
+            self.refresh = response["refresh"]
             return True
         else:
             return False
     
-    # refresh the token
+    # refresh the access token using the refresh token
     def refresh_token(self):
-        r = requests.post(f"{self.base_url}/auth/api/refresh", headers=self.build_headers(self.refresh))
+        r = requests.post(
+            f"{self.base_url}/identity/token/refresh", 
+            headers=self.build_headers(self.token),
+            data=self.refresh
+        )
         response = r.json()
-        if r.status_code == 200 and "access_token" in response:
-            self.token = response["access_token"]
+        if r.status_code == 200 and "access" in response:
+            self.token = response["access"]
             return True
         else:
             return False
@@ -100,37 +116,37 @@ class Session:
     
     @property
     def token(self): 
-        logging.debug("Getting Token") 
+        logger.debug("Getting Token") 
         if self._token is None:
-            logging.debug("Session _token is empty, attempting to retrieve from local file.")
+            logger.debug("Session _token is empty, attempting to retrieve from local file.")
             self._token = self.__get_session()
 
         if self._token is None:
-            logging.debug("Session _token is still empty!")
+            logger.debug("Session _token is still empty!")
         return self._token 
     
     # a setter function 
     @token.setter 
     def token(self, a): 
-        logging.debug("Setting Token") 
+        logger.debug("Setting Token") 
         self._token = self.__save_session_token(a)
     
 
     @property
     def refresh(self): 
-        logging.debug("Getting Refresh Token") 
+        logger.debug("Getting Refresh Token") 
         if self._refresh is None:
-            logging.debug("Refresh _token is empty, attempting to retrieve from local file.")
+            logger.debug("Refresh _token is empty, attempting to retrieve from local file.")
             self._refresh = self.__get_session(type="refresh")
 
         if self._refresh is None:
-            logging.debug("Refresh _token is still empty!")
+            logger.debug("Refresh _token is still empty!")
         return self._refresh 
     
     # a setter function 
     @refresh.setter 
     def refresh(self, a): 
-        logging.debug("Setting Refresh Token") 
+        logger.debug("Setting Refresh Token") 
         self._refresh = self.__save_session_token(a, type="refresh")
     
     # Save session token
@@ -188,50 +204,62 @@ class Session:
         
         return header
 
+    # Grab a 
     def __get_local_config(self, config_name):
         
         if self._config_contents is None:
-            logging.info("Config file has not yet been parsed, grabbing contents")
+            logger.info("Config file has not yet been parsed, grabbing contents")
             self._config_contents = self.__parse_file(self.conf_file, self.current_profile)
         
         try:
             return self._config_contents[config_name]
         except: 
-            logging.info(f"Could not retrieve specified config parameter {config_name}.")
+            logger.info(f"Could not retrieve specified config parameter {config_name}.")
             return ""
         
 
     def __get_local_credentials(self, credential_name):
 
         if self._cred_contents is None:
-            logging.info("Credentials file has not yet been parsed, grabbing contents")
+            logger.info("Credentials file has not yet been parsed, grabbing contents")
             self._cred_contents = self.__parse_file(self.cred_file, self.current_profile)
 
         try:
             return self._cred_contents[credential_name]
         except: 
-            logging.info(f"Could not retrieve specified credentials parameter {credential_name}.")
+            logger.info(f"Could not retrieve specified credentials parameter {credential_name}.")
             return ""
     
     def client(self, type):
-        """Return an API client for the requested type. e.g. .client("vm")"""
+        """
+        Return an API client for the requested type. e.g. .client("vm")
+        
+        It also supplies this Session with the login to the returned class.
+        """
         requested_client = getattr(sys.modules[__name__], type)
         return requested_client(self)
     
-    def __parse_file(self, file, profile):
-         # profile == ConfigParser's "section" (e.g. [default])
+
+    def __parse_file(self, file:str, profile:str):
+        """
+        Uses ConfigParser to read a provided file. 
+
+        This function, given a profile name (The string in brackets in the file e.g. ["my-profile"])
+        will return a dictionary of the items inside of it instead of the list tuple
+        """
         parser = ConfigParser()
         parser.read(file)
+        dict_items = {}
+
         if (parser.has_section(profile)):
             items = parser.items(profile)
 
-            dict_items = {}
             for item in items:
                 dict_items[item[0]] = item[1]
         else:
-            logging.info(f"Parsed file {file} does not have items for the specified profile [{profile}].")
-            return []
+            logger.info(f"Parsed file {file} does not have items for the specified profile [{profile}].")
             #raise CredentialsFileError(f"Parsed file {file} does not have items for the specified profile [{profile}].")
+
         return dict_items
 
 class CredentialsFileError(Exception):

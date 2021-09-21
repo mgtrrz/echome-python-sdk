@@ -1,27 +1,47 @@
 from echome import Session
 import logging
 import json
+from echome.vm import Vm
 
-logging.basicConfig(level=logging.DEBUG)
-
+logging.getLogger().setLevel(logging.DEBUG)
 
 session = Session()
-vm_client = session.client("Vm")
+vm_client:Vm = session.client("Vm")
+
+
+# resp = vm_client.create(
+#     ImageId="gmi-92fcfbbc",
+#     InstanceType="standard.small",
+#     NetworkProfile="home-network",
+#     KeyName="echome",
+#     PrivateIp="172.16.9.60",
+#     Tags={
+#         'Name': 'openvswitch'
+#     }
+# )
+# print(resp)
+
+#print(vm_client.stop("vm-7ecd866b"))
 
 vms = vm_client.describe_all()
+vms = vms["results"]
 print("VMs__________________________________")
 for vm in vms:
     name = vm["tags"]["Name"] if "Name" in vm["tags"] else ""
     print(f"{vm['instance_id']}\t{name}")
 
+# resp = vm_client.terminate("vm-f603d655")
+# resp = vm_client.terminate("vm-eb11bf5c")
+# resp = vm_client.terminate("vm-b5427291")
 
-network_client = session.client("Network")
-networks = network_client.describe_all()
-for network in networks:
-    print(json.dumps(network, indent=4))
+# network_client = session.client("Network")
+# networks = network_client.describe_all()
+# networks = networks["results"]
+# for network in networks:
+#     print(json.dumps(network, indent=4))
 
-net = network_client.describe("vnet-517d0ed2")
-print(json.dumps(net, indent=4))
+# net = network_client.describe("vnet-517d0ed2")
+# print(json.dumps(net, indent=4))
 
 #thing = vm.describe_all()
 # our_vm = vm.describe("vm-e7468d6e")

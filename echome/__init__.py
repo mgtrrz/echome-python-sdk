@@ -1,25 +1,21 @@
 __title__ = 'echome-sdk'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __author__ = 'Marcus Gutierrez'
 
 import logging
 import os
-from .session import Session, Vm, Images, SshKey
+from .session import Session
 
-debug_level = os.getenv("ECHOME_DEBUG", "error")
-if debug_level == "error":
+debug_level = os.getenv("ECHOME_DEBUG", "WARNING")
+if debug_level == "ERROR":
     lv = logging.ERROR
-elif debug_level == "debug":
+elif debug_level == "DEBUG":
     lv = logging.DEBUG
-elif debug_level == "info":
+elif debug_level == "INFO":
     lv = logging.INFO
-elif debug_level == "warning":
+elif debug_level == "WARNING":
     lv = logging.WARNING
 else:
     raise Exception("Unknown debug level set in ECHOME_DEBUG environment variable.")
 
-logger = logging.getLogger()
-# If the logger's level was set outside of this function, use that value instead.
-# Otherwise, grab what was set in the environment variable, or fall back to the default.
-if logger.level == logging.ERROR:
-    logging.basicConfig(level=lv)
+logging.basicConfig(level=lv)

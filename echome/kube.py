@@ -1,10 +1,8 @@
-import requests
-import logging
-import base64
-import json
 import string
-from .response import Response
+import logging
 from .resource import base_resource
+
+logger = logging.getLogger(__name__)
 
 class Kube(base_resource):
     namespace = "kube"

@@ -1,13 +1,11 @@
-import requests
-import logging
-import base64
-import json
 import string
-from .response import Response
+import logging
 from .resource import base_resource
 
-class Access(base_resource):
-    namespace = "access"
+logger = logging.getLogger(__name__)
+
+class Identity(base_resource):
+    namespace = "identity"
 
     def describe_all(self, json_response=True):
         r = self.request_url("/describe/all")

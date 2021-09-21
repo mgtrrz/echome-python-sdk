@@ -1,9 +1,10 @@
 import requests
-import logging
 import base64
 import json
-from .response import Response
+import logging
 from .resource import base_resource
+
+logger = logging.getLogger(__name__)
 
 class Vm (base_resource):
     namespace = "vm"
@@ -64,7 +65,7 @@ class Vm (base_resource):
         if not id:
             id = self.vm_id
         
-        r = self.request_url(f"/stop/{id}", "post")
+        r = self.request_url(f"/modify/{id}", "post", Action='stop')
         self.status_code = r.status_code
         return r.json()
     
@@ -72,7 +73,7 @@ class Vm (base_resource):
         if not id:
             id = self.vm_id
 
-        r = self.request_url(f"/start/{id}", "post")
+        r = self.request_url(f"/modify/{id}", "post", Action='start')
         self.status_code = r.status_code
         return r.json()
 
@@ -115,7 +116,7 @@ class Images (base_resource):
         namespace = "vm/images/guest"
 
         def describe_all(self):
-            r = self.request_url(f"/describe-all")
+            r = self.request_url(f"/describe/all")
             self.status_code = r.status_code
             return r.json()
 
