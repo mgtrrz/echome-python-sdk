@@ -101,7 +101,7 @@ class Session:
         r = requests.post(
             f"{self.base_url}/identity/token/refresh", 
             headers=self.build_headers(self.token),
-            data=self.refresh
+            data={"refresh": self.refresh}
         )
         response = r.json()
         if r.status_code == 200 and "access" in response:
