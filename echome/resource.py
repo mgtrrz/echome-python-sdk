@@ -69,7 +69,7 @@ class base_resource:
             logger.debug(response.raw.msg)
 
         
-        if response.status_code == 200 or response.status_code == 400 or response.status_code == 404 or response.status_code == 500:
+        if response.status_code in [200, 400, 404]:
             return response
         else:
             logger.debug(f"Unexpected response from the server: {response.status_code}")
