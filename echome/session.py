@@ -72,7 +72,6 @@ class Session:
         # try retrieving session tokens we already have by reading the files and setting the variables
         self.load_local_tokens()
         # If the token variable is still empty, log in to set them.
-        logger.debug(self._token)
         if self._token is None:
             self.login()
 
