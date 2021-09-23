@@ -4,11 +4,9 @@ import platform
 import os
 import sys
 from configparser import ConfigParser
-from os import getenv
 from pathlib import Path
+from .exceptions import UnrecoverableError
 from .vm import Vm, Images, SshKey
-from .network import Network
-from .response import Response
 from .network import Network
 from .kube import Kube
 from .identity import Identity
@@ -45,12 +43,12 @@ class Session:
 
         config_from_file = {}
 
-        self.current_profile = getenv("ECHOME_PROFILE", DEFAULT_PROFILE)
+        self.current_profile = os.getenv("ECHOME_PROFILE", DEFAULT_PROFILE)
         
-        self.server_url = getenv("ECHOME_SERVER", self.__get_local_config("server"))
-        self.access_id  = getenv("ECHOME_ACCESS_ID", self.__get_local_credentials("access_id"))
-        self.secret_key = getenv("ECHOME_SECRET_KEY", self.__get_local_credentials("secret_key"))
-        self.connection_type = getenv("ECHOME_PROTOCOL", config_from_file["protocol"] if self.__get_local_config("protocol") else DEFAULT_CONNECTION)
+        self.server_url = os.getenv("ECHOME_SERVER", self.__get_local_config("server"))
+        self.access_id  = os.getenv("ECHOME_ACCESS_ID", self.__get_local_credentials("access_id"))
+        self.secret_key = os.getenv("ECHOME_SECRET_KEY", self.__get_local_credentials("secret_key"))
+        self.connection_type = os.getenv("ECHOME_PROTOCOL", config_from_file["protocol"] if self.__get_local_config("protocol") else DEFAULT_CONNECTION)
         if self.connection_type == "insecure":
             self.protocol = "http://"
         elif self.connection_type == "secure":
@@ -58,11 +56,11 @@ class Session:
         else:
             raise ConfigFileError(f"Unknown connection type specified. Use either 'secure' or 'insecure'. A blank value defaults to {DEFAULT_CONNECTION}")
 
-        self.format      = getenv("ECHOME_FORMAT", config_from_file["format"] if "format" in config_from_file else DEFAULT_FORMAT)
+        self.format      = os.getenv("ECHOME_FORMAT", config_from_file["format"] if "format" in config_from_file else DEFAULT_FORMAT)
         self.API_VERSION = API_VERSION
 
         if not self.server_url:
-            Response.unrecoverable_error("ecHome server URL is not set in environment variable or config file. Unable to continue!")
+            raise UnrecoverableError("ecHome server URL is not set in environment variable or config file. Unable to continue.")
         
         # Setting the base URL: <protocol>://<server-domain-or-ip>/api/<version>
         self.base_url = f"{self.protocol}{self.server_url}/api/{self.API_VERSION}"
