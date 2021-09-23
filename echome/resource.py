@@ -1,7 +1,7 @@
 import requests
 import logging
 import json
-from .response import Response
+from .exceptions import UnauthorizedResponse, UnexpectedResponseError, UnrecoverableError
 
 logger = logging.getLogger(__name__)
 
@@ -50,14 +50,14 @@ class base_resource:
                         pass
                     else:
                         logger.debug("Unable to login, giving up at this point.")
-                        Response.unauthorized_response("Unable to successfully authorize with ecHome server.", exit=True)
+                        raise UnauthorizedResponse("Unable to successfully authorize with ecHome server.")
 
             if response.status_code != 401:
                 break
 
             if x > 5:
                 logger.warn("While True loop for making a request exceeded 5 loops. This should not have happened.")
-                raise Exception("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
+                raise UnrecoverableError("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
             x += 1
         
         # Try to unpack the JSON response to see if it's a valid response
@@ -73,7 +73,7 @@ class base_resource:
             return response
         else:
             logger.debug(f"Unexpected response from the server: {response.status_code}")
-            Response.unexpected_response(f"Unexpected response from the server: {response.raw}", exit=True)
+            raise UnexpectedResponseError(f"Got unexpected response from the server. Status code: {response.status_code}")
 
     def unpack_tags(self, tags: dict):
         return self.unpack_dict(tags, "Tag")
