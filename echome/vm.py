@@ -146,15 +146,6 @@ class Images (BaseResource):
         return self.__user(self.session)
 
 
-class InvalidImageType(Exception):
-    pass
-
-class UnauthorizedResponse(Exception):
-    pass
-
-class UnexpectedResponse(Exception):
-    pass
-
 class SshKey (BaseResource):
     namespace = "vm/ssh_key"
 
