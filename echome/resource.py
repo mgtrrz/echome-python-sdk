@@ -5,7 +5,7 @@ from .exceptions import UnauthorizedResponse, UnexpectedResponseError, Unrecover
 
 logger = logging.getLogger(__name__)
 
-class base_resource:
+class BaseResource:
     namespace = ""
 
     def __init__(self, session):

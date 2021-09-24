@@ -22,7 +22,6 @@ default_credential_file = "credentials"
 DEFAULT_PROFILE = "default"
 
 DEFAULT_CONNECTION = "insecure"
-DEFAULT_FORMAT = "table"
 API_VERSION = "v1"
 
 # Grabs the config and credentials from the user's home dir
@@ -34,21 +33,32 @@ class Session:
     _config_contents = None
     _cred_contents = None
 
-    def __init__(self):
+    def __init__(self, profile:str = None, server:str = None, access_id:str = None, 
+            secret_key:str = None, protocol:str = None):
         self.home_dir = str(Path.home())
         echome_dir = f"{self.home_dir}/{default_echome_dir}"
 
         self.cred_file  = f"{echome_dir}/{default_credential_file}"
         self.conf_file  = f"{echome_dir}/{default_config_file}"
 
-        config_from_file = {}
-
-        self.current_profile = os.getenv("ECHOME_PROFILE", DEFAULT_PROFILE)
+        # Order of preference for values:
+        # If the value is set with in class initiation, these will always take precedence.
+        # If no values are supplied, we look for environment variables (ECHOME_PROFILE, ECHOME_SERVER, etc.)
+        # If neither are set we look at the user's supplied file for config and credentials.
+        self.current_profile = self._get(profile, os.getenv("ECHOME_PROFILE", DEFAULT_PROFILE))
         
-        self.server_url = os.getenv("ECHOME_SERVER", self.__get_local_config("server"))
-        self.access_id  = os.getenv("ECHOME_ACCESS_ID", self.__get_local_credentials("access_id"))
-        self.secret_key = os.getenv("ECHOME_SECRET_KEY", self.__get_local_credentials("secret_key"))
-        self.connection_type = os.getenv("ECHOME_PROTOCOL", config_from_file["protocol"] if self.__get_local_config("protocol") else DEFAULT_CONNECTION)
+        self.server_url = self._get(server, os.getenv("ECHOME_SERVER", self.__get_local_config("server")))
+        self.access_id  = self._get(access_id, os.getenv("ECHOME_ACCESS_ID", self.__get_local_credentials("access_id")))
+        self.secret_key = self._get(secret_key, os.getenv("ECHOME_SECRET_KEY", self.__get_local_credentials("secret_key")))
+
+        # Some values like 'protocol' will default to the DEFAULT_CONNECTION
+        # even if it is not supplied anywhere. 
+        proto = self.__get_local_config("protocol") 
+        self.connection_type = self._get(
+            protocol, 
+            os.getenv("ECHOME_PROTOCOL", proto if proto else DEFAULT_CONNECTION)
+        )
+
         if self.connection_type == "insecure":
             self.protocol = "http://"
         elif self.connection_type == "secure":
@@ -56,7 +66,6 @@ class Session:
         else:
             raise ConfigFileError(f"Unknown connection type specified. Use either 'secure' or 'insecure'. A blank value defaults to {DEFAULT_CONNECTION}")
 
-        self.format      = os.getenv("ECHOME_FORMAT", config_from_file["format"] if "format" in config_from_file else DEFAULT_FORMAT)
         self.API_VERSION = API_VERSION
 
         if not self.server_url:
@@ -74,7 +83,6 @@ class Session:
         # If the token variable is still empty, log in to set them.
         if self._token is None:
             self.login()
-
     
     # Login and retrieve our tokens
     def login(self):
@@ -211,7 +219,7 @@ class Session:
         try:
             return self._config_contents[config_name]
         except: 
-            logger.info(f"Could not retrieve specified config parameter {config_name}.")
+            logger.info(f"Could not retrieve specified config parameter: '{config_name}'.")
             return ""
         
 
@@ -258,6 +266,16 @@ class Session:
             #raise CredentialsFileError(f"Parsed file {file} does not have items for the specified profile [{profile}].")
 
         return dict_items
+    
+    def _get(self, first_value, second_value):
+        """
+        Returns the first value if it has a value, otherwise, returns the second value.
+        """
+        if first_value is not None :
+            return first_value
+        else:
+            return second_value
+    
 
 class CredentialsFileError(Exception):
     pass
