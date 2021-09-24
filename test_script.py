@@ -3,10 +3,10 @@ import logging
 import json
 from echome.vm import Vm
 
-logging.getLogger().setLevel(logging.DEBUG)
+# logging.getLogger().setLevel(logging.DEBUG)
 
-session = Session()
-vm_client:Vm = session.client("Vm")
+# session = Session()
+# vm_client:Vm = session.client("Vm")
 
 
 # resp = vm_client.create(
@@ -23,12 +23,12 @@ vm_client:Vm = session.client("Vm")
 
 #print(vm_client.stop("vm-7ecd866b"))
 
-vms = vm_client.describe_all()
-vms = vms["results"]
-print("VMs__________________________________")
-for vm in vms:
-    name = vm["tags"]["Name"] if "Name" in vm["tags"] else ""
-    print(f"{vm['instance_id']}\t{name}")
+# vms = vm_client.describe_all()
+# vms = vms["results"]
+# print("VMs__________________________________")
+# for vm in vms:
+#     name = vm["tags"]["Name"] if "Name" in vm["tags"] else ""
+#     print(f"{vm['instance_id']}\t{name}")
 
 # resp = vm_client.terminate("vm-f603d655")
 # resp = vm_client.terminate("vm-eb11bf5c")

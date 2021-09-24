@@ -6,8 +6,12 @@ from echome.resource import BaseResource
 
 class BaseResourceTestCase(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(self):
+        self.session = Session(server="localhost", access_id="1234", secret_key="1234")
+        self.base_resource = BaseResource(self.session)
+
     def test_unpack_dict(self):
-        base_resource = BaseResource(Session(server="localhost", access_id="1234", secret_key="1234"))
         test_1_dict = {
             "Name": "Resource-1", 
             "Env":"Staging",
@@ -26,6 +30,34 @@ class BaseResourceTestCase(unittest.TestCase):
             "Tag.4.Value": "",
         }
         self.assertDictEqual(
-            base_resource.unpack_dict(test_1_dict, "Tag"), 
+            self.base_resource.unpack_dict(test_1_dict, "Tag"), 
             test_1_result
         )
+    
+    def test_unpack_list(self):
+        test_list = ["192.168.10.10", "192.168.10.11", "192.168.10.12"]
+        test_1_result = {
+            "Node": "1",
+            "Node.1.Ip": "192.168.10.10",
+            "Node.2.Ip": "192.168.10.11",
+            "Node.3.Ip": "192.168.10.12",
+        }
+        test_2_result = {
+            "Ip": "1",
+            "Ip.1": "192.168.10.10",
+            "Ip.2": "192.168.10.11",
+            "Ip.3": "192.168.10.12",
+        }
+
+        self.assertDictEqual(
+            self.base_resource.unpack_list(test_list, "Node", "Ip"), 
+            test_1_result
+        )
+        self.assertDictEqual(
+            self.base_resource.unpack_list(test_list, "Ip"), 
+            test_2_result
+        )
+
+
+if __name__ == '__main__':
+    BaseResourceTestCase.main()

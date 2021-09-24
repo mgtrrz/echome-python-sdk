@@ -14,7 +14,7 @@ clean: 		# Clean the contents of the
 	rm -rf build/ dist/ *.egg-info 
 
 .PHONY: test
-publish:
+test:
 	python -m unittest
 
 .PHONY: publish

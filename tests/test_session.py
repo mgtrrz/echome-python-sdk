@@ -12,4 +12,3 @@ class SessionTestCase(unittest.TestCase):
  
 if __name__ == '__main__':
     SessionTestCase.main()
-
