@@ -271,10 +271,14 @@ class Session:
         """
         Returns the first value if it has a value, otherwise, returns the second value.
         """
-        if first_value is not None :
-            return first_value
-        else:
-            return second_value
+        #if ( isinstance(first_value, str) and first_value.strip() != "" ):
+        if first_value is not None:
+            if isinstance(first_value, str) and first_value.strip() == "":
+                return second_value
+            else:
+                return first_value
+
+        return second_value
     
 
 class CredentialsFileError(Exception):
