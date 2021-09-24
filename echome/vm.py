@@ -2,11 +2,11 @@ import requests
 import base64
 import json
 import logging
-from .resource import base_resource
+from .resource import BaseResource
 
 logger = logging.getLogger(__name__)
 
-class Vm (base_resource):
+class Vm (BaseResource):
     namespace = "vm"
 
     def describe_all(self, json_response=True):
@@ -92,7 +92,7 @@ class Vm (base_resource):
             return "GenericVmObject"
         
 
-class Instance (base_resource):
+class Instance (BaseResource):
     def __init__(self, session, namespace, **kwargs):
         self.vm_id = kwargs.get("instance_id")
         self.attached_interfaces = kwargs.get("attached_interfaces", "")
@@ -111,8 +111,8 @@ class Instance (base_resource):
 
 # TODO: Return image objects
 
-class Images (base_resource):
-    class __guest (base_resource):
+class Images (BaseResource):
+    class __guest (BaseResource):
         namespace = "vm/images/guest"
 
         def describe_all(self):
@@ -131,7 +131,7 @@ class Images (base_resource):
             return r.json()
 
     
-    class __user (base_resource):
+    class __user (BaseResource):
         namespace = "vm/images/user"
 
         def describe_all(self):
@@ -155,7 +155,7 @@ class UnauthorizedResponse(Exception):
 class UnexpectedResponse(Exception):
     pass
 
-class SshKey (base_resource):
+class SshKey (BaseResource):
     namespace = "vm/ssh_key"
 
     def describe_all(self):
@@ -191,7 +191,7 @@ class SshKey (base_resource):
         self.status_code = r.status_code
         return r.json()
 
-class SshKeyObject(base_resource):
+class SshKeyObject(BaseResource):
 
     def __init__(self, session, namespace, **kwargs):
         self.fingerprint = kwargs["fingerprint"]

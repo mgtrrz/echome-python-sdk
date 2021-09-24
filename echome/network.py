@@ -1,10 +1,10 @@
 import string
 import logging
-from .resource import base_resource
+from .resource import BaseResource
 
 logger = logging.getLogger(__name__)
 
-class Network(base_resource):
+class Network(BaseResource):
     namespace = "network"
 
     def describe_all(self, json_response=True):
