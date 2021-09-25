@@ -15,7 +15,7 @@ clean: 		# Clean the contents of the
 
 .PHONY: test
 test:
-	python -m unittest
+	python -m unittest -v
 
 .PHONY: publish
 publish:

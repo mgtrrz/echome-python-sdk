@@ -1,11 +1,14 @@
+import logging
 import unittest
 from echome.session import Session, ConfigFileError
+
+logging.getLogger().setLevel(logging.DEBUG)
  
 class SessionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.session = Session(server="localhost", access_id="1234", secret_key="1234")
+        self.session = Session(server="localhost", access_id="1234", secret_key="1234", login=False)
 
     def test_get(self):
         self.assertEqual("test", self.session._get("test", "second_test"))

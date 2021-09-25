@@ -1,14 +1,15 @@
-import sys
-import os
+import logging
 import unittest
 from echome.session import Session
 from echome.resource import BaseResource
+
+logging.getLogger().setLevel(logging.DEBUG)
 
 class BaseResourceTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.session = Session(server="localhost", access_id="1234", secret_key="1234")
+        self.session = Session(server="localhost", access_id="1234", secret_key="1234", login=False)
         self.base_resource = BaseResource(self.session)
 
     def test_unpack_dict(self):

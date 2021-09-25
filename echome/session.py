@@ -14,13 +14,12 @@ from . import __version__ as sdk_version
 
 logger = logging.getLogger(__name__)
 
-default_echome_dir = ".echome"
-default_echome_session_dir = ".echome/sess"
-default_config_file = "config"
-default_credential_file = "credentials"
+DEFAULT_ECHOME_DIR = ".echome"
+DEFAULT_ECHOME_SESSION_DIR = ".echome/sess"
+DEFAULT_CONFIG_FILE = "config"
+DEFAULT_CREDENTIAL_FILE = "credentials"
 
 DEFAULT_PROFILE = "default"
-
 DEFAULT_CONNECTION = "insecure"
 API_VERSION = "v1"
 
@@ -34,12 +33,12 @@ class Session:
     _cred_contents = None
 
     def __init__(self, profile:str = None, server:str = None, access_id:str = None, 
-            secret_key:str = None, protocol:str = None):
+            secret_key:str = None, protocol:str = None, login:bool = True):
         self.home_dir = str(Path.home())
-        echome_dir = f"{self.home_dir}/{default_echome_dir}"
+        echome_dir = f"{self.home_dir}/{DEFAULT_ECHOME_DIR}"
 
-        self.cred_file  = f"{echome_dir}/{default_credential_file}"
-        self.conf_file  = f"{echome_dir}/{default_config_file}"
+        self.cred_file  = f"{echome_dir}/{DEFAULT_CREDENTIAL_FILE}"
+        self.conf_file  = f"{echome_dir}/{DEFAULT_CONFIG_FILE}"
 
         # Order of preference for values:
         # If the value is set with in class initiation, these will always take precedence.
@@ -81,8 +80,10 @@ class Session:
         # try retrieving session tokens we already have by reading the files and setting the variables
         self.load_local_tokens()
         # If the token variable is still empty, log in to set them.
-        if self._token is None:
+        if login and self._token is None:
             self.login()
+        else:
+            logger.debug('login set to false, skipping session grabbing')
     
     # Login and retrieve our tokens
     def login(self):
@@ -156,7 +157,7 @@ class Session:
     
     # Save session token
     def __save_session_token(self, token, type="access"):
-        sess_dir = f"{self.home_dir}/{default_echome_session_dir}"
+        sess_dir = f"{self.home_dir}/{DEFAULT_ECHOME_SESSION_DIR}"
 
         try:
             if not os.path.exists(sess_dir):
@@ -180,7 +181,7 @@ class Session:
         
     # Get token
     def __get_session(self, type="access"):
-        sess_dir = f"{self.home_dir}/{default_echome_session_dir}"
+        sess_dir = f"{self.home_dir}/{DEFAULT_ECHOME_SESSION_DIR}"
 
         if type == "access":
             fname = "token"
