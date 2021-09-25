@@ -1,8 +1,6 @@
 import logging
 import unittest
 from echome.session import Session, ConfigFileError
-
-logging.getLogger().setLevel(logging.DEBUG)
  
 class SessionTestCase(unittest.TestCase):
 

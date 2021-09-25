@@ -3,8 +3,6 @@ import unittest
 from echome.session import Session
 from echome.resource import BaseResource
 
-logging.getLogger().setLevel(logging.DEBUG)
-
 class BaseResourceTestCase(unittest.TestCase):
 
     @classmethod
