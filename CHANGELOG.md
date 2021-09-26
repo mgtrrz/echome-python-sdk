@@ -16,6 +16,14 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.3.1] - 2021-09-26
+
+### Removed
+- Describe VM now returns a proper response
+
+### Changed
+- Additional testing added
+
 ## [0.3.0] - 2021-09-25
 
 ### Added
@@ -39,7 +47,8 @@ Types of changes:
 ### Added
 - Initial import of ecHome python SDK
 
-[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.0...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/mgtrrz/echome-python-sdk/releases/tag/0.1.0
