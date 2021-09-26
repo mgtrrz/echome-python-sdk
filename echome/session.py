@@ -175,7 +175,7 @@ class Config:
             for item in items:
                 dict_items[item[0]] = item[1]
         else:
-            raise ConfigFileError(f"Parsed file {file} does not have items for the specified profile [{profile}].")
+            logger.info(f"Parsed file {file} does not have items for the specified profile [{profile}].")
         return dict_items
 
 
