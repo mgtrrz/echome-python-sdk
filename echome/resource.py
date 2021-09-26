@@ -20,15 +20,15 @@ class BaseResource:
     def build_headers(self):
         headers = {
             'user-agent': self.session.user_agent,
-            'Authorization': f"Bearer {self.session.token}"
+            'Authorization': f"Bearer {self.session.config.access_token}"
         }
         
         return headers
     
     def request_url(self, url_namespace, method="get", **kwargs):
         # method here defines the request type to make. 'get' == requests.get, 'post', requests.post, etc.
-        try_refresh = False
-        try_login = False
+        tried_refresh = False
+        tried_login = False
         x = 0
         while True:
             logger.debug(f"Calling: {self.base_url}{url_namespace}")
@@ -36,21 +36,17 @@ class BaseResource:
             logger.debug(f"Got response code: {response.status_code}")
 
             if response.status_code == 401:
-                # Try refreshing the token
+                # We got a 401, try refreshing the access token.
                 logger.debug("Access token has expired, attempting refresh")
-                if self.session.refresh_token() and try_refresh is False:
-                    # The method returned True, it should be good to retry.
-                    try_refresh = True
-                    pass
-                else:
-                    # If we can't refresh, the refresh token is expired, try logging in to get new token/refresh.
-                    if self.session.login() and try_login is False:
-                        # try the original call again
-                        try_login = True
-                        pass
-                    else:
-                        logger.debug("Unable to login, giving up at this point.")
-                        raise UnauthorizedResponse("Unable to successfully authorize with ecHome server.")
+                try:
+                    self.session.refresh_access_token()
+                except UnauthorizedResponse:
+                    # That still failed, try logging in.
+                    logger.debug("401 when refreshing access token, going to try logging in.")
+                    try:
+                        self.session.login()
+                    except UnauthorizedResponse:
+                        raise "Unable to successfully authorize with ecHome server."
 
             if response.status_code != 401:
                 break
