@@ -1,12 +1,10 @@
-import requests
-import logging
-import base64
-import json
 import string
-from .response import Response
-from .resource import base_resource
+import logging
+from .resource import BaseResource
 
-class Kube(base_resource):
+logger = logging.getLogger(__name__)
+
+class Kube(BaseResource):
     namespace = "kube"
 
     def describe_all_clusters(self, json_response=True):

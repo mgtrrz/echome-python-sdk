@@ -1,11 +1,12 @@
 import requests
-import logging
 import base64
 import json
-from .response import Response
-from .resource import base_resource
+import logging
+from .resource import BaseResource
 
-class Vm (base_resource):
+logger = logging.getLogger(__name__)
+
+class Vm (BaseResource):
     namespace = "vm"
 
     def describe_all(self, json_response=True):
@@ -64,7 +65,7 @@ class Vm (base_resource):
         if not id:
             id = self.vm_id
         
-        r = self.request_url(f"/stop/{id}", "post")
+        r = self.request_url(f"/modify/{id}", "post", Action='stop')
         self.status_code = r.status_code
         return r.json()
     
@@ -72,7 +73,7 @@ class Vm (base_resource):
         if not id:
             id = self.vm_id
 
-        r = self.request_url(f"/start/{id}", "post")
+        r = self.request_url(f"/modify/{id}", "post", Action='start')
         self.status_code = r.status_code
         return r.json()
 
@@ -91,7 +92,7 @@ class Vm (base_resource):
             return "GenericVmObject"
         
 
-class Instance (base_resource):
+class Instance (BaseResource):
     def __init__(self, session, namespace, **kwargs):
         self.vm_id = kwargs.get("instance_id")
         self.attached_interfaces = kwargs.get("attached_interfaces", "")
@@ -110,12 +111,12 @@ class Instance (base_resource):
 
 # TODO: Return image objects
 
-class Images (base_resource):
-    class __guest (base_resource):
+class Images (BaseResource):
+    class __guest (BaseResource):
         namespace = "vm/images/guest"
 
         def describe_all(self):
-            r = self.request_url(f"/describe-all")
+            r = self.request_url(f"/describe/all")
             self.status_code = r.status_code
             return r.json()
 
@@ -130,7 +131,7 @@ class Images (base_resource):
             return r.json()
 
     
-    class __user (base_resource):
+    class __user (BaseResource):
         namespace = "vm/images/user"
 
         def describe_all(self):
@@ -145,16 +146,7 @@ class Images (base_resource):
         return self.__user(self.session)
 
 
-class InvalidImageType(Exception):
-    pass
-
-class UnauthorizedResponse(Exception):
-    pass
-
-class UnexpectedResponse(Exception):
-    pass
-
-class SshKey (base_resource):
+class SshKey (BaseResource):
     namespace = "vm/ssh_key"
 
     def describe_all(self):
@@ -190,7 +182,7 @@ class SshKey (base_resource):
         self.status_code = r.status_code
         return r.json()
 
-class SshKeyObject(base_resource):
+class SshKeyObject(BaseResource):
 
     def __init__(self, session, namespace, **kwargs):
         self.fingerprint = kwargs["fingerprint"]

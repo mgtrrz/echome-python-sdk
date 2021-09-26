@@ -1,13 +1,14 @@
 import requests
 import logging
-import base64
 import json
-from .response import Response
+from .exceptions import UnauthorizedResponse, UnexpectedResponseError, UnrecoverableError
 
-class base_resource:
+logger = logging.getLogger(__name__)
+
+class BaseResource:
     namespace = ""
 
-    def __init__(self, session, item_id=None):
+    def __init__(self, session):
         self.init_session(session)
     
     def init_session(self, session, namespace=""):
@@ -16,65 +17,59 @@ class base_resource:
         self.base_url = f"{session.base_url}/{self.namespace}"
         self.session = session
     
-    def build_headers(self, type="access"):
-
-        logging.debug("Preparing Requests headers for normal access request")
+    def build_headers(self):
         headers = {
             'user-agent': self.session.user_agent,
-            'Authorization': f"Bearer {self.session.token}"
+            'Authorization': f"Bearer {self.session.config.access_token}"
         }
         
         return headers
     
     def request_url(self, url_namespace, method="get", **kwargs):
         # method here defines the request type to make. 'get' == requests.get, 'post', requests.post, etc.
-        try_refresh = False
-        try_login = False
+        tried_refresh = False
+        tried_login = False
         x = 0
         while True:
-            logging.debug(f"Calling: {self.base_url}{url_namespace}")
-            response = getattr(requests, method)(f"{self.base_url}{url_namespace}", headers=self.build_headers(), params=kwargs)
-            logging.debug(f"Got response code: {response.status_code}")
+            logger.debug(f"Calling: {self.base_url}{url_namespace}")
+            response = getattr(requests, method)(f"{self.base_url}{url_namespace}", headers=self.build_headers(), data=kwargs)
+            logger.debug(f"Got response code: {response.status_code}")
 
             if response.status_code == 401:
-                # Try refreshing the token
-                logging.debug("Access token has expired, attempting refresh")
-                if self.session.refresh_token() and try_refresh is False:
-                    # The method returned True, it should be good to retry.
-                    try_refresh = True
-                    pass
-                else:
-                    # If we can't refresh, the refresh token is expired, try logging in to get new token/refresh.
-                    if self.session.login() and try_login is False:
-                        # try the original call again
-                        try_login = True
-                        pass
-                    else:
-                        logging.debug("Unable to login, giving up at this point.")
-                        Response.unauthorized_response("Unable to successfully authorize with ecHome server.", exit=True)
+                # We got a 401, try refreshing the access token.
+                logger.debug("Access token has expired, attempting refresh")
+                try:
+                    self.session.refresh_access_token()
+                except UnauthorizedResponse:
+                    # That still failed, try logging in.
+                    logger.debug("401 when refreshing access token, going to try logging in.")
+                    try:
+                        self.session.login()
+                    except UnauthorizedResponse:
+                        raise "Unable to successfully authorize with ecHome server."
 
             if response.status_code != 401:
                 break
 
             if x > 5:
-                logging.warn("While True loop for making a request exceeded 5 loops. This should not have happened.")
-                raise Exception("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
+                logger.warn("While True loop for making a request exceeded 5 loops. This should not have happened.")
+                raise UnrecoverableError("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
             x += 1
         
         # Try to unpack the JSON response to see if it's a valid response
         try:
             dec = response.json()
         except json.decoder.JSONDecodeError as e:
-            logging.warning("Got non-json response from server.")
-            logging.debug(e)
-            logging.debug(response.raw.msg)
+            logger.warning("Got non-json response from server.")
+            logger.debug(e)
+            logger.debug(response.raw.msg)
 
         
-        if response.status_code == 200 or response.status_code == 400 or response.status_code == 404 or response.status_code == 500:
+        if response.status_code in [200, 400, 404]:
             return response
         else:
-            logging.debug(f"Unexpected response from the server: {response.status_code}")
-            Response.unexpected_response(f"Unexpected response from the server: {response.raw}", exit=True)
+            logger.debug(f"Unexpected response from the server: {response.status_code}")
+            raise UnexpectedResponseError(f"Got unexpected response from the server. Status code: {response.status_code}")
 
     def unpack_tags(self, tags: dict):
         return self.unpack_dict(tags, "Tag")

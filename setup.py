@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="echome-sdk",
-    version="0.2.0",
+    version="0.3.0",
     author="Marcus Gutierrez",
     author_email="markg90@gmail.com",
     description="EcHome python library",
@@ -20,6 +20,6 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        'requests>=2.24'
+        'requests>=2.26'
     ]
 )

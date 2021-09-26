@@ -16,6 +16,15 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.3.0] - 2021-09-25
+
+### Added
+- Ability to specify server, credentials, or profile when instantiating the Session class
+
+### Changed
+- Compatibility with new server release
+- Refactored a lot of Session code and allows better handling of cases
+
 ## [0.2.0] - 2021-04-03
 
 ### Added
@@ -30,6 +39,7 @@ Types of changes:
 ### Added
 - Initial import of ecHome python SDK
 
-[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.2.0...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/mgtrrz/echome-python-sdk/releases/tag/0.1.0
