@@ -1,7 +1,7 @@
 import requests
 import logging
 import json
-from .exceptions import UnauthorizedResponse, UnexpectedResponseError, UnrecoverableError
+from .exceptions import UnauthorizedResponse, UnexpectedResponseError, UnrecoverableError, ResourceDoesNotExistError
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ class BaseResource:
             if response.status_code != 401:
                 break
 
-            if x > 5:
-                logger.warn("While True loop for making a request exceeded 5 loops. This should not have happened.")
+            if x > 4:
+                logger.warn("While True loop for making a request exceeded 4 loops. This should not have happened.")
                 raise UnrecoverableError("Reached an infinite loop state while making a request that should not have happened. Exiting for safety.")
             x += 1
         
@@ -64,9 +64,10 @@ class BaseResource:
             logger.debug(e)
             logger.debug(response.raw.msg)
 
-        
-        if response.status_code in [200, 400, 404]:
+        if response.status_code in [200, 400]:
             return response
+        elif response.status_code == 404:
+            raise ResourceDoesNotExistError(response)
         else:
             logger.debug(f"Unexpected response from the server: {response.status_code}")
             raise UnexpectedResponseError(f"Got unexpected response from the server. Status code: {response.status_code}")
@@ -74,16 +75,18 @@ class BaseResource:
     def unpack_tags(self, tags: dict):
         return self.unpack_dict(tags, "Tag")
     
-    # Given a dictionary of tags for a resource, will return a dictionary
-    # to make an HTTP request with.
-    # e.g. {"Name": "Resource-1", "Env":"Staging"}
-    # returns: {
-    #     "Tag.1.Key": "Name",
-    #     "Tag.1.Value": "Resource-1",
-    #     "Tag.2.Key": "Env", 
-    #     "Tag.2.Value": "Staging"
-    # }
+
     def unpack_dict(self, generic_dict:dict, dict_name:str):
+        """Given a dictionary of tags for a resource, will return a dictionary to make an HTTP request with.
+
+        e.g. {"Name": "Resource-1", "Env":"Staging"}
+        returns: {
+            "Tag.1.Key": "Name",
+            "Tag.1.Value": "Resource-1",
+            "Tag.2.Key": "Env", 
+            "Tag.2.Value": "Staging"
+        }
+        """
         unpacked_dict = {}
         num = 1
         unpacked_dict[dict_name] = "1"
@@ -93,19 +96,21 @@ class BaseResource:
             num += 1
         return unpacked_dict
     
-    # Given a generic list, and a name to use for the list, will return a
-    # dictionary to make an HTTP request with.
-    # e.g. generic_list = ["192.168.10.10", "192.168.10.11", "192.168.10.12"]
-    #      list_name = "Node",
-    #      list_name_append = "Ip"
-    # returns: {
-    #     "Node.1.Ip": "192.168.10.10",
-    #     "Node.2.Ip": "192.168.10.11",
-    #     "Node.3.Ip": "192.168.10.12",
-    # }
-    # list_name_append is optional, if ommited, the key would simply look like:
-    # "Node.1"
+
     def unpack_list(self, generic_list:list, list_name:str, list_name_append:str=None):
+        """Given a generic list and a name to use for the list, will return a dictionary to make an HTTP request with.
+        
+        e.g. generic_list = ["192.168.10.10", "192.168.10.11", "192.168.10.12"]
+        list_name = "Node",
+        list_name_append = "Ip"
+        returns: {
+            "Node.1.Ip": "192.168.10.10",
+            "Node.2.Ip": "192.168.10.11",
+            "Node.3.Ip": "192.168.10.12",
+        }
+        list_name_append is optional, if ommited, the key would simply look like:
+        "Node.1"
+        """
         if list_name_append:
             list_name_append = f".{list_name_append}"
         else:

@@ -3,55 +3,25 @@ import base64
 import json
 import logging
 from .resource import BaseResource
+from .exceptions import ResourceDoesNotExistError
 
 logger = logging.getLogger(__name__)
 
 class Vm (BaseResource):
     namespace = "vm"
 
-    def describe_all(self, json_response=True):
+    def describe_all(self):
         r = self.request_url("/describe/all")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
         return r.json()
 
-    def describe(self, vm_id, json_response=True):
+    def describe(self, vm_id):
         r = self.request_url(f"/describe/{vm_id}")
         self.status_code = r.status_code
         self.raw_json_response = r.json()
+        return json.loads(r.text)
 
-        if r.status_code != 200:
-            # TODO: Error handling
-            return r.json()
-
-        resp = json.loads(r.text)
-        for vm in resp:
-            instobj = Instance(
-                self.session, 
-                self.namespace, 
-                attached_interfaces = vm["attached_interfaces"],
-                created = vm["created"],
-                host = vm["host"],
-                instance_id = vm["instance_id"],
-                instance_size = f"{vm['instance_type']}.{vm['instance_size']}",
-                key_name = vm["key_name"],
-                state = vm["state"],
-                tags = vm["tags"]
-            )
-        if not json_response:
-            return instobj
-        else:
-            return resp
-    
-    def set_metadata(self, **kwargs):
-        self.vm_id = kwargs.get("instance_id")
-        self.attached_interfaces = kwargs.get("attached_interfaces", "")
-        self.host = kwargs.get("host", "")
-        self.created = kwargs.get("created", "")
-        self.key_name = kwargs.get("key_name", "")
-        self.instance_size = kwargs.get('instance_size', "")
-        self.state = kwargs.get("state", {})
-        self.tags = kwargs.get("tags", {})
         
     def create(self, **kwargs):
         if "Tags" in kwargs and kwargs["Tags"] is not None:
