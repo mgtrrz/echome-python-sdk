@@ -25,14 +25,12 @@ class BaseResource:
         
         return headers
     
-    def request_url(self, url_namespace, method="get", **kwargs):
+    def request_url(self, url, method="get", **kwargs):
         # method here defines the request type to make. 'get' == requests.get, 'post', requests.post, etc.
-        tried_refresh = False
-        tried_login = False
         x = 0
         while True:
-            logger.debug(f"Calling: {self.base_url}{url_namespace}")
-            response = getattr(requests, method)(f"{self.base_url}{url_namespace}", headers=self.build_headers(), data=kwargs)
+            logger.debug(f"Calling: {self.base_url}{url}")
+            response = getattr(requests, method)(f"{self.base_url}{url}", headers=self.build_headers(), data=kwargs)
             logger.debug(f"Got response code: {response.status_code}")
 
             if response.status_code == 401:
@@ -65,7 +63,7 @@ class BaseResource:
             logger.debug(response.raw.msg)
 
         if response.status_code in [200, 400]:
-            return response
+            return response.json()
         elif response.status_code == 404:
             raise ResourceDoesNotExistError(response)
         else:

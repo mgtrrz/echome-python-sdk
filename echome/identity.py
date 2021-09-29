@@ -1,40 +1,24 @@
-import string
 import logging
 from .resource import BaseResource
 
 logger = logging.getLogger(__name__)
 
 class Identity(BaseResource):
-    namespace = "identity"
+    namespace = "identity/user"
 
-    def describe_all(self, json_response=True):
-        r = self.request_url("/describe/all")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+    def describe_all_users(self):
+        return self.request_url("/describe/all")
     
-    def describe_user(self, user_id: string, json_response=True):
-        r = self.request_url(f"/describe/{user_id}")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+    def describe_user(self, user_id:str):
+        return self.request_url(f"/describe/{user_id}")
     
-    def describe_caller(self, json_response=True):
-        r = self.request_url(f"/describe/caller")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+    def describe_caller(self):
+        return self.request_url(f"/describe/caller")
     
-    def create(self, **kwargs):
+    def create_user(self, **kwargs):
         if "Tags" in kwargs:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
-        r = self.request_url(f"/create", "post", **kwargs)
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+        return self.request_url(f"/create", "post", **kwargs)
     
-    def delete(self, user_id: string, json_response=True):
-        r = self.request_url(f"/delete/{user_id}", "post")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+    def delete_user(self, user_id:str):
+        return self.request_url(f"/delete/{user_id}", "post")
