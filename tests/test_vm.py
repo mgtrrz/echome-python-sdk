@@ -17,20 +17,20 @@ class VmTestCase(unittest.TestCase):
     def test_describe_all(self, mock):
         with open("./tests/responses/vm-describe-all.json") as f:
             file = f.read()
-        mock.get('http://localhost/api/v1/vm/describe/all', text=file)
+        mock.get('http://localhost/api/v1/vm/vm/describe/all', text=file)
         
         self.assertDictEqual(json.loads(file), self.vm_client.describe_all_vms())
     
     def test_describe(self, mock):
         with open("./tests/responses/vm-describe-vm-a00000b1.json") as f:
             file = f.read()
-        mock.get('http://localhost/api/v1/vm/describe/vm-a00000b1', text=file)
+        mock.get('http://localhost/api/v1/vm/vm/describe/vm-a00000b1', text=file)
 
         self.assertDictEqual(json.loads(file), self.vm_client.describe("vm-a00000b1"))
 
         with open("./tests/responses/404-response.json") as f:
             file = f.read()
-        mock.get('http://localhost/api/v1/vm/describe/vm-a001', text=file, status_code=404)
+        mock.get('http://localhost/api/v1/vm/vm/describe/vm-a001', text=file, status_code=404)
         
         with self.assertRaises(ResourceDoesNotExistError):
             self.vm_client.describe_vm("vm-a001")
