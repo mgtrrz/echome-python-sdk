@@ -26,7 +26,7 @@ class VmTestCase(unittest.TestCase):
             file = f.read()
         mock.get('http://localhost/api/v1/vm/vm/describe/vm-a00000b1', text=file)
 
-        self.assertDictEqual(json.loads(file), self.vm_client.describe("vm-a00000b1"))
+        self.assertDictEqual(json.loads(file), self.vm_client.describe_vm("vm-a00000b1"))
 
         with open("./tests/responses/404-response.json") as f:
             file = f.read()
