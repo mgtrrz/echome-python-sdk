@@ -1,170 +1,62 @@
-import requests
-import base64
-import json
 import logging
+import base64
 from .resource import BaseResource
-from .exceptions import ResourceDoesNotExistError
 
 logger = logging.getLogger(__name__)
 
 class Vm (BaseResource):
     namespace = "vm"
 
-    def describe_all(self):
-        r = self.request_url("/describe/all")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return r.json()
+    def describe_all_vms(self):
+        return self.request_url("/vm/describe/all")
 
-    def describe(self, vm_id):
-        r = self.request_url(f"/describe/{vm_id}")
-        self.status_code = r.status_code
-        self.raw_json_response = r.json()
-        return json.loads(r.text)
-
+    def describe_vm(self, vm_id):
+        return self.request_url(f"/vm/describe/{vm_id}")
         
-    def create(self, **kwargs):
+    def create_vm(self, **kwargs):
         if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
         
-        r = self.request_url("/create", "post", **kwargs)
-        self.status_code = r.status_code
-        return r.json()
-    
-    def stop(self, id=""):
-        if not id:
-            id = self.vm_id
+        if "UserDataScript" in kwargs:
+            base64_bytes = base64.b64encode(kwargs["UserDataScript"].encode("utf-8"))
+            kwargs["UserDataScript"] = base64_bytes.decode('utf-8')
         
-        r = self.request_url(f"/modify/{id}", "post", Action='stop')
-        self.status_code = r.status_code
-        return r.json()
+        return self.request_url("/vm/create", "post", **kwargs)
     
-    def start(self, id=""):
-        if not id:
-            id = self.vm_id
-
-        r = self.request_url(f"/modify/{id}", "post", Action='start')
-        self.status_code = r.status_code
-        return r.json()
-
-    def terminate(self, id=""):
-        if not id:
-            id = self.vm_id
-
-        r = self.request_url(f"/terminate/{id}", "post")
-        self.status_code = r.status_code
-        return r.json()
+    def stop_vm(self, vm_id):
+        return self.request_url(f"/vm/modify/{vm_id}", "post", Action='stop')
     
-    def __str__(self):
-        if self.vm_id:
-            return self.vm_id
-        else:
-            return "GenericVmObject"
-        
+    def start_vm(self, vm_id):
+        return self.request_url(f"/vm/modify/{vm_id}", "post", Action='start')
 
-class Instance (BaseResource):
-    def __init__(self, session, namespace, **kwargs):
-        self.vm_id = kwargs.get("instance_id")
-        self.attached_interfaces = kwargs.get("attached_interfaces", "")
-        self.host = kwargs.get("host", "")
-        self.created = kwargs.get("created", "")
-        self.key_name = kwargs.get("key_name", "")
-        self.instance_size = kwargs.get('instance_size', "")
-        self.state = kwargs.get("state", {})
-        self.tags = kwargs.get("tags", {})
+    def terminate_vm(self, vm_id):
+        return self.request_url(f"/vm/terminate/{vm_id}", "post")
 
-        self.namespace = namespace
-        self.init_session(session)
-    
-    def __str__(self):
-        return self.vm_id
-
-# TODO: Return image objects
-
-class Images (BaseResource):
-    class __guest (BaseResource):
-        namespace = "vm/images/guest"
-
-        def describe_all(self):
-            r = self.request_url(f"/describe/all")
-            self.status_code = r.status_code
-            return r.json()
-
-        def describe(self, id):
-            r = self.request_url(f"/describe/{id}")
-            self.status_code = r.status_code
-            return r.json()
-
-        def register(self, **kwargs):
-            r = self.request_url(f"/register", method="post", **kwargs)
-            self.status_code = r.status_code
-            return r.json()
-
-    
-    class __user (BaseResource):
-        namespace = "vm/images/user"
-
-        def describe_all(self):
-            r = self.request_url(f"/describe-all")
-            self.status_code = r.status_code
-            return r.json()
-    
-    def guest(self):
-        return self.__guest(self.session)
-
-    def user(self):
-        return self.__user(self.session)
+    def create_vm_image(self, vm_id, **kwargs):
+        if "Tags" in kwargs and kwargs["Tags"] is not None:
+            kwargs.update(self.unpack_tags(kwargs["Tags"]))
+        return self.request_url(f"/vm/modify/{vm_id}", "post", Action='create-image', **kwargs)
 
 
-class SshKey (BaseResource):
-    namespace = "vm/ssh_key"
+    def describe_all_volumes(self):
+        return self.request_url("/volume/describe/all")
 
-    def describe_all(self):
-        r = self.request_url(f"/describe/all")
-        self.status_code = r.status_code
-        return r.json()
+    def describe_volume(self, vol_id):
+        return self.request_url(f"/volume/describe/{vol_id}") 
 
-    
-    def describe(self, KeyName):
-        r = self.request_url(f"/describe/{KeyName}")
-        self.status_code = r.status_code
-        return r.json()
 
-    
-    def create(self, KeyName):
-        r = self.request_url(f"/create", method="post", KeyName=KeyName)
-        self.status_code = r.status_code
-        return r.json()
-    
+    def describe_all_guest_images(self):
+            return self.request_url(f"/image/guest/describe/all")
 
-    def delete(self, KeyName):
-        r = self.request_url(f"/delete/{KeyName}", method="post")
-        self.status_code = r.status_code
-        return r.json()
-    
+    def describe_guest_image(self, id):
+        return self.request_url(f"/image/guest/describe/{id}")
 
-    def import_key(self, KeyName, PublicKey):
-        args = {
-            "KeyName": KeyName,
-            "PublicKey": base64.urlsafe_b64encode(PublicKey)
-        }
-        r = self.request_url(f"/import", method="post", params=args)
-        self.status_code = r.status_code
-        return r.json()
+    def register_guest_image(self, **kwargs):
+        return self.request_url(f"/image/guest/register", method="post", **kwargs)
 
-class SshKeyObject(BaseResource):
+    def describe_all_user_images(self):
+            return self.request_url(f"/image/user/describe/all")
 
-    def __init__(self, session, namespace, **kwargs):
-        self.fingerprint = kwargs["fingerprint"]
-        self.key_id = kwargs["key_id"]
-        self.key_name = kwargs["key_name"]
-        self.namespace = namespace
-        self.init_session(session)
-    
-    def __str__(self):
-        return self.key_name
-    
-    def delete(self):
-        r = requests.get(f"{self.base_url}/delete/{self.key_name}")
-        self.status_code = r.status_code
-        return r.json()
+    def describe_user_image(self, id):
+        return self.request_url(f"/image/user/describe/{id}")
+
