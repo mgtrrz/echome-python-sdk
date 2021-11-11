@@ -16,6 +16,11 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-11-11
+
+### Changed
+- API endpoints have been modified to work with with the new namespaced server-side endpoints
+
 ## [0.3.1] - 2021-09-26
 
 ### Removed
