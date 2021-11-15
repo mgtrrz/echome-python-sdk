@@ -7,13 +7,13 @@ class Network(BaseResource):
     namespace = "network/vnet"
 
     def describe_all_networks(self):
-        return self.request_url("/describe/all")
+        return self.get("/network/describe/all")
     
     def describe_network(self, vnet_id:str):
-        return self.request_url(f"/describe/{vnet_id}")
+        return self.get(f"/network/describe/{vnet_id}")
     
     def create_network(self, vnet_id:str):
-        return self.request_url(f"/create", "post")
+        return self.post(f"/network/create")
     
     def delete_network(self, vnet_id:str):
-        return self.request_url(f"/delete/{vnet_id}", "post")
+        return self.post(f"/network/delete/{vnet_id}")

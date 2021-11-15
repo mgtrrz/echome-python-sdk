@@ -7,13 +7,13 @@ class Kube(BaseResource):
     namespace = "kube"
 
     def describe_all_clusters(self):
-        return self.request_url("/cluster/describe/all")
+        return self.get("/cluster/describe/all")
     
     def describe_cluster(self, cluster_id:str):
-        return self.request_url(f"/cluster/describe/{cluster_id}")
+        return self.get(f"/cluster/describe/{cluster_id}")
     
     def terminate_cluster(self, cluster_id:str):
-        return self.request_url(f"/cluster/terminate/{cluster_id}", "post")
+        return self.post(f"/cluster/terminate/{cluster_id}")
     
     def create_cluster(self, **kwargs):
         if "Tags" in kwargs:
@@ -24,8 +24,8 @@ class Kube(BaseResource):
         else:
             raise ValueError("NodeIps must be included and of type list.")
 
-        return self.request_url(f"/cluster/create", "post", **kwargs)
+        return self.post(f"/cluster/create", **kwargs)
 
     def get_kube_config(self, cluster_id:str):
-        return self.request_url(f"/cluster/config/{cluster_id}")
+        return self.get(f"/cluster/config/{cluster_id}")
 
