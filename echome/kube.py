@@ -18,14 +18,14 @@ class Kube(BaseResource):
     def create_cluster(self, **kwargs):
         if "Tags" in kwargs:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
-        
-        if "NodeIps" in kwargs and isinstance(kwargs["NodeIps"], list):
-            kwargs.update(self.unpack_list(kwargs["NodeIps"], "Node", "Ip"))
-        else:
-            raise ValueError("NodeIps must be included and of type list.")
 
         return self.post(f"/cluster/create", **kwargs)
 
     def get_kube_config(self, cluster_id:str):
         return self.get(f"/cluster/config/{cluster_id}")
 
+    def add_node(self, cluster_id:str, **kwargs):
+        if "Tags" in kwargs:
+            kwargs.update(self.unpack_tags(kwargs["Tags"]))
+
+        return self.post(f"/cluster/modify/{cluster_id}", Action='add-node', **kwargs)
