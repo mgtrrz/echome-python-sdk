@@ -1,0 +1,14 @@
+{
+    "success": true,
+    "details": "",
+    "results": [
+      {
+        "key_id": "key-e00c6jab",
+        "created": "2021-10-22T12:20:37.210001Z",
+        "last_modified": "2021-10-22T12:20:37.210001Z",
+        "name": "new-key-test",
+        "fingerprint": "MD5:66:00:aa:bb:cc:dd:ee:ff:00:a2:b2:c2:d2:e2:f2:99",
+        "tags": {}
+      }
+    ]
+  }

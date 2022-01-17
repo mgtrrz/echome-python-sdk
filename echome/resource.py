@@ -6,18 +6,20 @@ from .exceptions import UnauthorizedResponse, UnexpectedResponseError, Unrecover
 logger = logging.getLogger(__name__)
 
 class BaseResource:
-    namespace = ""
+    namespace:str = ""
 
     def __init__(self, session):
         self.init_session(session)
     
+
     def init_session(self, session, namespace=""):
         if namespace:
             self.namespace = namespace
         self.base_url = f"{session.base_url}/{self.namespace}"
         self.session = session
     
-    def build_headers(self):
+    
+    def _build_headers(self):
         headers = {
             'user-agent': self.session.user_agent,
             'Authorization': f"Bearer {self.session.config.access_token}"
@@ -25,12 +27,13 @@ class BaseResource:
         
         return headers
     
+
     def request_url(self, url, method="get", **kwargs):
         # method here defines the request type to make. 'get' == requests.get, 'post', requests.post, etc.
         x = 0
         while True:
             logger.debug(f"Calling: {self.base_url}{url}")
-            response = getattr(requests, method)(f"{self.base_url}{url}", headers=self.build_headers(), data=kwargs)
+            response = getattr(requests, method)(f"{self.base_url}{url}", headers=self._build_headers(), data=kwargs)
             logger.debug(f"Got response code: {response.status_code}")
 
             if response.status_code == 401:
@@ -56,21 +59,31 @@ class BaseResource:
         
         # Try to unpack the JSON response to see if it's a valid response
         try:
-            dec = response.json()
+            json_resp = response.json()
         except json.decoder.JSONDecodeError as e:
             logger.warning("Got non-json response from server.")
             logger.debug(e)
             logger.debug(response.raw.msg)
 
         if response.status_code in [200, 400]:
-            return response.json()
+            return json_resp
         elif response.status_code == 404:
             raise ResourceDoesNotExistError(response)
         else:
             logger.debug(f"Unexpected response from the server: {response.status_code}")
             raise UnexpectedResponseError(f"Got unexpected response from the server. Status code: {response.status_code}")
 
+
+    def get(self, path:str, **kwargs):
+        return self.request_url(path, method="get", **kwargs)
+
+    
+    def post(self, path, **kwargs):
+        return self.request_url(path, method="post", **kwargs)
+
+
     def unpack_tags(self, tags: dict):
+        """Alias for unpack_dict()"""
         return self.unpack_dict(tags, "Tag")
     
 

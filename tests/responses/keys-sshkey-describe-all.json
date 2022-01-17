@@ -1,0 +1,30 @@
+{
+    "success": true,
+    "details": "",
+    "results": [
+      {
+        "key_id": "key-al293nc0",
+        "created": "2021-09-14T02:40:04.014706Z",
+        "last_modified": "2021-09-14T02:40:04.014728Z",
+        "name": "prod",
+        "fingerprint": "MD5:63:00:aa:bb:cc:00:aa:bb:cc:dd:ee:ff:00:11:22:33",
+        "tags": {}
+      },
+      {
+        "key_id": "key-e00c6jab",
+        "created": "2021-10-22T12:20:37.210001Z",
+        "last_modified": "2021-10-22T12:20:37.210001Z",
+        "name": "new-key-test",
+        "fingerprint": "MD5:66:00:aa:bb:cc:dd:ee:ff:00:a2:b2:c2:d2:e2:f2:99",
+        "tags": {}
+      },
+      {
+        "key_id": "key-o1w39zps",
+        "created": "2021-11-13T16:57:07.796805Z",
+        "last_modified": "2021-11-13T16:57:07.796820Z",
+        "name": "staging",
+        "fingerprint": "MD5:69:00:3b:2b:1b:00:22:33:44:55:66:77:88:99:00:a1",
+        "tags": {}
+      }
+    ]
+  }

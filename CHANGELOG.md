@@ -16,6 +16,11 @@ Types of changes:
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-01-17
+### Changed
+- Continual changes to work with new API endpoints
+- Some commands have changed and moved to different namespaces to match the server API
+  
 ## [0.4.0] - 2021-11-11
 
 ### Changed
@@ -52,7 +57,9 @@ Types of changes:
 ### Added
 - Initial import of ecHome python SDK
 
-[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.1...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.5.0...HEAD
+[0.4.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.4.0...0.5.0
+[0.4.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.1.0...0.2.0
