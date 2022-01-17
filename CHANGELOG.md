@@ -52,7 +52,8 @@ Types of changes:
 ### Added
 - Initial import of ecHome python SDK
 
-[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.1...HEAD
+[unreleased]: https://github.com/mgtrrz/echome-python-sdk/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.1...0.4.0
 [0.3.1]: https://github.com/mgtrrz/echome-python-sdk/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/mgtrrz/echome-python-sdk/compare/0.1.0...0.2.0
