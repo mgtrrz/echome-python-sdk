@@ -28,9 +28,21 @@ class BaseResourceTestCase(unittest.TestCase):
             "Tag.4.Key": "NoValue",
             "Tag.4.Value": "",
         }
+        test_2_dict = None
+        test_2_result = {}
+        test_3_dict = {}
+        test_3_result = {}
         self.assertDictEqual(
             self.base_resource.unpack_dict(test_1_dict, "Tag"), 
             test_1_result
+        )
+        self.assertDictEqual(
+            self.base_resource.unpack_dict(test_2_dict, "Tag"), 
+            test_2_result
+        )
+        self.assertDictEqual(
+            self.base_resource.unpack_dict(test_3_dict, "Tag"), 
+            test_3_result
         )
     
     def test_unpack_list(self):

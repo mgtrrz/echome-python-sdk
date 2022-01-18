@@ -35,4 +35,4 @@ class Keys (BaseResource):
         base64_bytes = base64.b64encode(PublicKey.encode("utf-8"))
         PublicKey = base64_bytes.decode('utf-8')
 
-        return self.post("/sshkey/create", Action='import', KeyName=KeyName, PublicKey=PublicKey)
+        return self.post("/sshkey/create", Action='import', KeyName=KeyName, PublicKey=PublicKey, Tags=Tags)

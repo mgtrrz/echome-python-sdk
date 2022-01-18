@@ -16,7 +16,7 @@ class Identity(BaseResource):
         return self.request_url(f"/describe/caller")
     
     def create_user(self, **kwargs):
-        if "Tags" in kwargs:
+        if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
         return self.request_url(f"/create", "post", **kwargs)
     
