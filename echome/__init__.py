@@ -1,5 +1,5 @@
 __title__ = 'echome-sdk'
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 __author__ = 'Marcus Gutierrez'
 
 import logging
