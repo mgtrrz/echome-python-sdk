@@ -99,6 +99,8 @@ class BaseResource:
         }
         """
         unpacked_dict = {}
+        if generic_dict is None or not generic_dict:
+            return unpacked_dict
         num = 1
         unpacked_dict[dict_name] = "1"
         for dict_key in generic_dict:

@@ -16,7 +16,7 @@ class Kube(BaseResource):
         return self.post(f"/cluster/terminate/{cluster_id}")
     
     def create_cluster(self, **kwargs):
-        if "Tags" in kwargs:
+        if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
 
         return self.post(f"/cluster/create", **kwargs)
@@ -25,7 +25,7 @@ class Kube(BaseResource):
         return self.get(f"/cluster/config/{cluster_id}")
 
     def add_node(self, cluster_id:str, **kwargs):
-        if "Tags" in kwargs:
+        if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
 
         return self.post(f"/cluster/modify/{cluster_id}", Action='add-node', **kwargs)

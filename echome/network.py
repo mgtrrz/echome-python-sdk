@@ -12,7 +12,7 @@ class Network(BaseResource):
     def describe_network(self, vnet_id:str):
         return self.get(f"/network/describe/{vnet_id}")
     
-    def create_network(self, vnet_id:str):
+    def create_network(self):
         return self.post(f"/network/create")
     
     def delete_network(self, vnet_id:str):
