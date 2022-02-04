@@ -9,11 +9,11 @@ class Kube(BaseResource):
     def describe_all_clusters(self):
         return self.get("/cluster/describe/all")
     
-    def describe_cluster(self, cluster_id:str):
-        return self.get(f"/cluster/describe/{cluster_id}")
+    def describe_cluster(self, name:str = None):
+        return self.get(f"/cluster/describe/{name}")
     
-    def terminate_cluster(self, cluster_id:str):
-        return self.post(f"/cluster/terminate/{cluster_id}")
+    def terminate_cluster(self, name:str = None):
+        return self.post(f"/cluster/terminate/{name}")
     
     def create_cluster(self, **kwargs):
         if "Tags" in kwargs and kwargs["Tags"] is not None:
@@ -21,11 +21,11 @@ class Kube(BaseResource):
 
         return self.post(f"/cluster/create", **kwargs)
 
-    def get_kube_config(self, cluster_id:str):
-        return self.get(f"/cluster/config/{cluster_id}")
+    def get_kube_config(self, name:str = None):
+        return self.get(f"/cluster/config/{name}")
 
-    def add_node(self, cluster_id:str, **kwargs):
+    def add_node(self, name:str = None, **kwargs):
         if "Tags" in kwargs and kwargs["Tags"] is not None:
             kwargs.update(self.unpack_tags(kwargs["Tags"]))
 
-        return self.post(f"/cluster/modify/{cluster_id}", Action='add-node', **kwargs)
+        return self.post(f"/cluster/modify/{name}", Action='add-node', **kwargs)
